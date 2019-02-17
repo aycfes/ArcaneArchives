@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
+import thaumcraft.common.container.slot.SlotCraftingArcaneWorkbench;
 
 import java.io.IOException;
 import java.util.ArrayList;

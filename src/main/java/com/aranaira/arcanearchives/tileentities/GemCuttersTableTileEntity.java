@@ -32,7 +32,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 
 	public static final int RECIPE_PAGE_LIMIT = 7;
 	private final GemCuttersTableItemHandler mInventory = new GemCuttersTableItemHandler(18);
-	private final ItemStackHandler mOutput = new ItemStackHandler(1);
 	private GemCuttersTableRecipe mRecipe = null;
 	private int curPage = 0;
 	public GemCuttersTableTileEntity()
@@ -46,14 +45,11 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 		return mInventory;
 	}
 
-	public ItemStackHandler getOutput()
-	{
-		return mOutput;
-	}
+	public ItemStack getOutput () {
+		GemCuttersTableRecipe recipe = getRecipe();
+		if (recipe == null) return ItemStack.EMPTY;
 
-	public void setOutput(ItemStack stack)
-	{
-		this.mOutput.setStackInSlot(0, stack);
+		return recipe.getOutput();
 	}
 
 	@Nullable
@@ -70,13 +66,7 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 	public void setRecipe(@Nullable GemCuttersTableRecipe recipe)
 	{
 		mRecipe = recipe;
-		if(recipe != null)
-		{
-			setOutput(recipe.getOutput());
-		}
 		updateOutput();
-
-		// send a synchronise packet
 	}
 
 	public void consume(UUID playerId)
@@ -133,7 +123,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 	@Override
 	public void update()
 	{
-
 	}
 
 	@Override
@@ -142,7 +131,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 		// I'm making this all worse
 		if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
 		{
-			if(facing == EnumFacing.DOWN) return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(mOutput);
 			return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(mInventory);
 		}
 		return super.getCapability(capability, facing);
@@ -159,7 +147,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 	public void readFromNBT(NBTTagCompound compound)
 	{
 		super.readFromNBT(compound);
-		mOutput.deserializeNBT(compound.getCompoundTag(Tags.OUTPUT));
 		mInventory.deserializeNBT(compound.getCompoundTag(AATileEntity.Tags.INVENTORY));
 
 		ItemStack recipe = ItemStack.EMPTY;
@@ -177,7 +164,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 	public NBTTagCompound writeToNBT(NBTTagCompound compound)
 	{
 		super.writeToNBT(compound);
-		compound.setTag(Tags.OUTPUT, mOutput.serializeNBT());
 		compound.setTag(AATileEntity.Tags.INVENTORY, mInventory.serializeNBT());
 		if(getRecipe() != null)
 		{
@@ -201,6 +187,7 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 		super.onDataPacket(net, pkt);
 	}
 
+	@Override
 	@Nonnull
 	public SPacketUpdateTileEntity getUpdatePacket()
 	{
@@ -233,7 +220,6 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 
 	public static class Tags
 	{
-		public static final String OUTPUT = "output";
 		public static final String RECIPE = "recipe";
 		public static final String PAGE = "page";
 	}

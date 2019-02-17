@@ -12,7 +12,7 @@ import net.minecraft.item.crafting.IRecipe;
 
 public class SlotIRecipe extends Slot
 {
-	private static IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
+	public static IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
 	private ContainerRadiantCraftingTable container;
 	private RadiantCraftingTableTileEntity tile;
 	private EntityPlayer player;

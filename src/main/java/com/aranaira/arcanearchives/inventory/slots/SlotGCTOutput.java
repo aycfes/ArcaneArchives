@@ -5,9 +5,7 @@ import com.aranaira.arcanearchives.registry.crafting.GemCuttersTableRecipe;
 import com.aranaira.arcanearchives.tileentities.GemCuttersTableTileEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -16,14 +14,14 @@ import javax.annotation.Nonnull;
 
 public class SlotGCTOutput extends SlotItemHandler
 {
-	private ContainerGemCuttersTable containerGemCuttersTable;
-	private Container cont;
+	private ContainerGemCuttersTable container;
+	private GemCuttersTableTileEntity tile;
 
-	public SlotGCTOutput(ContainerGemCuttersTable containerGemCuttersTable, IItemHandler handler, Container cont, int xPosition, int yPosition)
+	public SlotGCTOutput(ContainerGemCuttersTable containerGemCuttersTable, int xPosition, int yPosition)
 	{
-		super(handler, 0, xPosition, yPosition);
-		this.containerGemCuttersTable = containerGemCuttersTable;
-		this.cont = cont;
+		super(new ItemStackHandler(0), 0, xPosition, yPosition);
+		this.container = containerGemCuttersTable;
+		this.tile = containerGemCuttersTable.getTile();
 	}
 
 	@Override
@@ -35,33 +33,23 @@ public class SlotGCTOutput extends SlotItemHandler
 	@Override
 	public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
 	{
-		GemCuttersTableRecipe recipe = containerGemCuttersTable.getTile().getRecipe();
+		GemCuttersTableRecipe recipe = tile.getRecipe();
 		if(recipe == null) return ItemStack.EMPTY;
-		GemCuttersTableTileEntity tile = containerGemCuttersTable.getTile();
-		ItemStackHandler tileInv = tile.getInventory();
-		InvWrapper ply = new InvWrapper(containerGemCuttersTable.playerInventory);
 
-		if(thePlayer.world.isRemote)
+		if (!container.RECIPE_STATUS.getOrDefault(recipe, false)) return ItemStack.EMPTY;
+
+		ItemStackHandler tileInv = tile.getInventory();
+		InvWrapper ply = new InvWrapper(container.playerInventory);
+
+		if(!thePlayer.world.isRemote)
 		{
-			if(!recipe.matchesRecipe(tileInv, ply))
-			{
-				stack = ItemStack.EMPTY;
-			}
-		} else
-		{
-			if(!recipe.matchesRecipe(tileInv, ply))
-			{
-				stack = ItemStack.EMPTY;
-			} else if(!recipe.consume(tileInv, ply))
-			{
-				stack = ItemStack.EMPTY;
-			}
+			if(!recipe.consume(tileInv, ply)) return ItemStack.EMPTY;
 		}
 
 		if(thePlayer instanceof EntityPlayerMP)
 		{
 			tile.updateOutput();
-			((EntityPlayerMP) thePlayer).sendAllContents(cont, cont.getInventory());
+			((EntityPlayerMP) thePlayer).sendAllContents(container, container.getInventory());
 		}
 
 		return stack;

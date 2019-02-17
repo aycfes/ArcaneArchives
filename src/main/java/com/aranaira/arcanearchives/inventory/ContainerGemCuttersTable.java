@@ -1,5 +1,6 @@
 package com.aranaira.arcanearchives.inventory;
 
+import com.aranaira.arcanearchives.inventory.slots.SlotCraftingGCT;
 import com.aranaira.arcanearchives.inventory.slots.SlotGCTOutput;
 import com.aranaira.arcanearchives.inventory.slots.SlotRecipeHandler;
 import com.aranaira.arcanearchives.registry.crafting.GemCuttersTableRecipe;
@@ -11,9 +12,9 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
+import thaumcraft.common.container.slot.SlotOutput;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -21,21 +22,23 @@ import java.util.Map;
 
 public class ContainerGemCuttersTable extends Container
 {
+	public IInventory playerInventory;
+	public Map<GemCuttersTableRecipe, Boolean> RECIPE_STATUS = new HashMap<>();
 	private GemCuttersTableTileEntity tile;
 	private boolean isServer;
-	public IInventory playerInventory;
 	private GemCuttersTableTileEntity.GemCuttersTableItemHandler tileInventory;
-	private ItemStackHandler tileOutput;
+	// private SlotCraftingGCT outputSlot;
 	private SlotGCTOutput outputSlot;
 	private Runnable updateRecipeGUI;
+	private EntityPlayer player;
 
-	public ContainerGemCuttersTable(GemCuttersTableTileEntity tile, IInventory playerInventory, boolean serverSide)
+	public ContainerGemCuttersTable(GemCuttersTableTileEntity tile, IInventory playerInventory, EntityPlayer player, boolean serverSide)
 	{
 		this.tile = tile;
 		this.isServer = serverSide;
 		this.playerInventory = playerInventory;
 		this.tileInventory = tile.getInventory();
-		this.tileOutput = tile.getOutput();
+		this.player = player;
 
 		int i = 35;
 		for(int y = 2; y > -1; y--)
@@ -53,7 +56,9 @@ public class ContainerGemCuttersTable extends Container
 			i--;
 		}
 
-		outputSlot = new SlotGCTOutput(this, tileOutput, this, 95, 18);
+		// outputSlot = new SlotCraftingGCT(tile, this, player, 95, 18);
+
+		outputSlot = new SlotGCTOutput(this, 95, 18);
 
 		this.addSlotToContainer(outputSlot);
 
@@ -141,7 +146,6 @@ public class ContainerGemCuttersTable extends Container
 		{
 			if(slotId <= 43 && slotId >= 37)
 			{
-				getTile().setRecipe(getSlot(slotId).getStack());
 				return ItemStack.EMPTY;
 			}
 		}
@@ -176,6 +180,8 @@ public class ContainerGemCuttersTable extends Container
 		{
 			map.put(recipe, recipe.matchesRecipe(tileInventory, new InvWrapper(playerInventory)));
 		}
+
+		RECIPE_STATUS = map;
 
 		return map;
 	}
