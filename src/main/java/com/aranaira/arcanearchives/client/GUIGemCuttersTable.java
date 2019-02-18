@@ -17,9 +17,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GUIGemCuttersTable extends GuiContainer
 {
@@ -28,23 +26,22 @@ public class GUIGemCuttersTable extends GuiContainer
 
 	private static final int OVERLAY = 0xaa1e3340;
 
-	ContainerGemCuttersTable mCGCT;
+	ContainerGemCuttersTable container;
 	GemCuttersTableRecipe curRecipe = null;
 	private InvisibleButton PrevPageButton;
 	private InvisibleButton NextPageButton;
 	private EntityPlayer player;
-	private Map<GemCuttersTableRecipe, Boolean> RECIPE_STATUS = new HashMap<>();
 	private int timesChanged;
 
 	public GUIGemCuttersTable(EntityPlayer player, ContainerGemCuttersTable container)
 	{
 		super(container);
-		mCGCT = container;
+		this.container = container;
 		container.setUpdateRecipeGUI(this::updateRecipeStatus);
 		this.xSize = 206;
 		this.ySize = 254;
 		this.player = player;
-		updateRecipeStatus();
+		container.updateRecipeStatus();
 		this.timesChanged = this.player.inventory.getTimesChanged();
 	}
 
@@ -69,7 +66,7 @@ public class GUIGemCuttersTable extends GuiContainer
 				this.drawTexturedModalRect(slot.xPos - 2, slot.yPos - 2, 206, 0, 20, 20);
 			}
 
-			if(!RECIPE_STATUS.get(recipe))
+			if(!container.RECIPE_STATUS.get(recipe))
 			{
 				dimSlot(slot, wasEnabled);
 			}
@@ -77,7 +74,7 @@ public class GUIGemCuttersTable extends GuiContainer
 		{
 			if(!slot.getStack().isEmpty() && curRecipe != null)
 			{
-				if(!RECIPE_STATUS.getOrDefault(curRecipe, false))
+				if(!container.RECIPE_STATUS.getOrDefault(curRecipe, false))
 				{
 					dimSlot(slot, false);
 				}
@@ -108,14 +105,12 @@ public class GUIGemCuttersTable extends GuiContainer
 		this.buttonList.add(PrevPageButton);
 		this.buttonList.add(NextPageButton);
 
-		updateRecipeStatus();
+		container.updateRecipeStatus();
 	}
 
 	public void updateRecipeStatus()
 	{
-		curRecipe = mCGCT.getTile().getRecipe();
-		RECIPE_STATUS.clear();
-		RECIPE_STATUS.putAll(mCGCT.updateRecipeStatus());
+		curRecipe = container.getTile().getRecipe();
 	}
 
 	@Override
@@ -128,7 +123,7 @@ public class GUIGemCuttersTable extends GuiContainer
 		int nextChanged = this.player.inventory.getTimesChanged();
 		if(nextChanged != this.timesChanged)
 		{
-			updateRecipeStatus();
+			container.updateRecipeStatus();
 			this.timesChanged = nextChanged;
 		}
 	}
@@ -145,7 +140,7 @@ public class GUIGemCuttersTable extends GuiContainer
 			GemCuttersTableRecipe recipe = ((SlotRecipeHandler) slot).getRecipe();
 			if(recipe != null)
 			{
-				if(RECIPE_STATUS.getOrDefault(recipe, false))
+				if(container.RECIPE_STATUS.getOrDefault(recipe, false))
 				{// Valid
 					tooltip.add(TextFormatting.GREEN + stack.getDisplayName());
 				} else
@@ -188,11 +183,11 @@ public class GUIGemCuttersTable extends GuiContainer
 	{
 		if(button.id == 0)
 		{
-			mCGCT.getTile().previousPage();
+			container.getTile().previousPage();
 		}
 		if(button.id == 1)
 		{
-			mCGCT.getTile().nextPage();
+			container.getTile().nextPage();
 		}
 		super.actionPerformed(button);
 	}

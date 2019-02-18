@@ -1,5 +1,6 @@
 package com.aranaira.arcanearchives.tileentities;
 
+import com.aranaira.arcanearchives.inventory.handlers.InfiniteItemHandler;
 import com.aranaira.arcanearchives.network.AAPacketHandler;
 import com.aranaira.arcanearchives.network.PacketGemCutters;
 import com.aranaira.arcanearchives.registry.crafting.GemCuttersTableRecipe;
@@ -32,7 +33,7 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 
 	public static final int RECIPE_PAGE_LIMIT = 7;
 	private final GemCuttersTableItemHandler mInventory = new GemCuttersTableItemHandler(18);
-	private final ItemStackHandler mOutput = new ItemStackHandler(1);
+	private final InfiniteItemHandler mOutput = new InfiniteItemHandler(ItemStack.EMPTY);
 	private GemCuttersTableRecipe mRecipe = null;
 	private int curPage = 0;
 	public GemCuttersTableTileEntity()
@@ -46,7 +47,7 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 		return mInventory;
 	}
 
-	public ItemStackHandler getOutput()
+	public InfiniteItemHandler getOutput()
 	{
 		return mOutput;
 	}
@@ -213,6 +214,10 @@ public class GemCuttersTableTileEntity extends AATileEntity implements ITickable
 	@Override
 	public boolean updateOutput()
 	{
+		if (getRecipe() != null) {
+			setOutput(getRecipe().getOutput());
+		}
+
 		if(world == null || world.isRemote) return false;
 
 		if(super.updateOutput()) return true;

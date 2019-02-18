@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 public class SlotRecipeHandler extends Slot
 {
-	private static IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
+	public static IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
 	private final int index;
 	private final int x;
 	private final int y;

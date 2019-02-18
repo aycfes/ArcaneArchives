@@ -1,11 +1,12 @@
 package com.aranaira.arcanearchives.inventory.slots;
 
 import com.aranaira.arcanearchives.inventory.ContainerGemCuttersTable;
+import com.aranaira.arcanearchives.inventory.handlers.InfiniteItemHandler;
 import com.aranaira.arcanearchives.registry.crafting.GemCuttersTableRecipe;
 import com.aranaira.arcanearchives.tileentities.GemCuttersTableTileEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -16,14 +17,38 @@ import javax.annotation.Nonnull;
 
 public class SlotGCTOutput extends SlotItemHandler
 {
-	private ContainerGemCuttersTable containerGemCuttersTable;
-	private Container cont;
+	private ContainerGemCuttersTable container;
+	private GemCuttersTableRecipe curRecipe;
+	private InfiniteItemHandler handler;
 
-	public SlotGCTOutput(ContainerGemCuttersTable containerGemCuttersTable, IItemHandler handler, Container cont, int xPosition, int yPosition)
+	public SlotGCTOutput(ContainerGemCuttersTable container, InfiniteItemHandler handler, int xPosition, int yPosition)
 	{
 		super(handler, 0, xPosition, yPosition);
-		this.containerGemCuttersTable = containerGemCuttersTable;
-		this.cont = cont;
+		this.container = container;
+		this.handler = handler;
+	}
+
+	public void setCurRecipe(GemCuttersTableRecipe curRecipe)
+	{
+		this.curRecipe = curRecipe;
+		if (curRecipe != null)
+			this.handler.setCurrentStack(curRecipe.getOutput());
+	}
+
+	@Override
+	public boolean canTakeStack(EntityPlayer playerIn)
+	{
+		return container.RECIPE_STATUS.getOrDefault(curRecipe, false);
+	}
+
+	@Nonnull
+	@Override
+	public ItemStack decrStackSize(int amount)
+	{
+		if (!canTakeStack(null)) return ItemStack.EMPTY;
+
+		return super.decrStackSize(amount);
+		// this should do something with amount crafted
 	}
 
 	@Override
@@ -33,36 +58,48 @@ public class SlotGCTOutput extends SlotItemHandler
 	}
 
 	@Override
+	public void onSlotChanged()
+	{
+		super.onSlotChanged();
+
+		container.getTile().markDirty();
+	}
+
+	@Override
 	public ItemStack onTake(EntityPlayer thePlayer, ItemStack stack)
 	{
-		GemCuttersTableRecipe recipe = containerGemCuttersTable.getTile().getRecipe();
-		if(recipe == null) return ItemStack.EMPTY;
-		GemCuttersTableTileEntity tile = containerGemCuttersTable.getTile();
-		ItemStackHandler tileInv = tile.getInventory();
-		InvWrapper ply = new InvWrapper(containerGemCuttersTable.playerInventory);
+		// GemCuttersTableRecipe recipe = getCurRecipe(); //container.getTile().getRecipe();
+		if(curRecipe == null) return ItemStack.EMPTY;
 
-		if(thePlayer.world.isRemote)
+		GemCuttersTableTileEntity tile = container.getTile();
+		ItemStackHandler tileInv = tile.getInventory();
+		InvWrapper ply = new InvWrapper(container.playerInventory);
+
+		//boolean matches = false;
+		//if(curRecipe.matchesRecipe(tileInv, ply)) matches = true;
+
+		/*if(thePlayer.world.isRemote)
 		{
-			if(!recipe.matchesRecipe(tileInv, ply))
+			if (!matches)
 			{
 				stack = ItemStack.EMPTY;
 			}
 		} else
 		{
-			if(!recipe.matchesRecipe(tileInv, ply))
+			if(!matches)
 			{
 				stack = ItemStack.EMPTY;
-			} else if(!recipe.consume(tileInv, ply))
+			} else if(!curRecipe.consume(tileInv, ply))
 			{
 				stack = ItemStack.EMPTY;
 			}
-		}
+		}*/
+		if (!thePlayer.world.isRemote) curRecipe.consume(tileInv, ply);
 
-		if(thePlayer instanceof EntityPlayerMP)
-		{
-			tile.updateOutput();
-			((EntityPlayerMP) thePlayer).sendAllContents(cont, cont.getInventory());
-		}
+
+		tile.updateOutput();
+
+		onSlotChanged();
 
 		return stack;
 	}

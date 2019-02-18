@@ -1,5 +1,6 @@
 package com.aranaira.arcanearchives.inventory;
 
+import com.aranaira.arcanearchives.inventory.handlers.InfiniteItemHandler;
 import com.aranaira.arcanearchives.inventory.slots.SlotGCTOutput;
 import com.aranaira.arcanearchives.inventory.slots.SlotRecipeHandler;
 import com.aranaira.arcanearchives.registry.crafting.GemCuttersTableRecipe;
@@ -21,11 +22,12 @@ import java.util.Map;
 
 public class ContainerGemCuttersTable extends Container
 {
+	public Map<GemCuttersTableRecipe, Boolean> RECIPE_STATUS = new HashMap<>();
 	public IInventory playerInventory;
 	private GemCuttersTableTileEntity tile;
 	private boolean isServer;
 	private GemCuttersTableTileEntity.GemCuttersTableItemHandler tileInventory;
-	private ItemStackHandler tileOutput;
+	private InfiniteItemHandler tileOutput;
 	private SlotGCTOutput outputSlot;
 	private Runnable updateRecipeGUI;
 
@@ -53,7 +55,7 @@ public class ContainerGemCuttersTable extends Container
 			i--;
 		}
 
-		outputSlot = new SlotGCTOutput(this, tileOutput, this, 95, 18);
+		outputSlot = new SlotGCTOutput(this, tileOutput, 95, 18);
 
 		this.addSlotToContainer(outputSlot);
 
@@ -87,23 +89,34 @@ public class ContainerGemCuttersTable extends Container
 	public void setUpdateRecipeGUI(Runnable updateRecipeGUI)
 	{
 		this.updateRecipeGUI = updateRecipeGUI;
-		this.tileInventory.addHook(updateRecipeGUI);
+		this.tileInventory.addHook(this::updateRecipeStatus);
 	}
 
 	@Override
 	@Nonnull
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index)
 	{
-		ItemStack stack = ItemStack.EMPTY;
+		ItemStack stack;
 		final Slot slot = inventorySlots.get(index);
 
-		if(slot != null && slot.getHasStack() && index != 36)
+		if(slot != null && slot.getHasStack())
 		{
-			final ItemStack slotStack = slot.getStack();
+			ItemStack slotStack = slot.getStack();
 			stack = slotStack.copy();
 
 			//Chest inventory
-			if(index < 36)
+			if(index == 36)
+			{
+				slotStack = slot.onTake(playerIn, slotStack);
+				if(slotStack.isEmpty()) return ItemStack.EMPTY;
+				if(!mergeItemStack(slotStack, 45, 62, true))
+				{
+					return ItemStack.EMPTY;
+				} else
+				{
+					tile.updateOutput();
+				}
+			} else if(index < 36)
 			{
 				if(!mergeItemStack(slotStack, 45, 62, true)) return ItemStack.EMPTY;
 			}
@@ -120,7 +133,8 @@ public class ContainerGemCuttersTable extends Container
 			{
 				slot.onSlotChanged();
 			}
-		} else {
+		} else
+		{
 			return ItemStack.EMPTY;
 		}
 
@@ -142,16 +156,17 @@ public class ContainerGemCuttersTable extends Container
 		if(slotId <= 43 && slotId >= 37)
 		{
 			getTile().setRecipe(getSlot(slotId).getStack());
+			outputSlot.setCurRecipe(getTile().getRecipe());
 
-			if (player.world.isRemote)
+			if(player.world.isRemote)
 			{
-				updateRecipeGUI.run();
+				runUpdate();
 			}
 
 			return ItemStack.EMPTY;
 		}
 
-		if(slotId == 36)
+		/*if(slotId == 36)
 		{
 			GemCuttersTableRecipe recipe = getTile().getRecipe();
 			if(recipe == null) return ItemStack.EMPTY;
@@ -163,7 +178,7 @@ public class ContainerGemCuttersTable extends Container
 			{
 				return ItemStack.EMPTY;
 			}
-		}
+		}*/
 
 		return super.slotClick(slotId, dragType, clickTypeIn, player);
 	}
@@ -173,16 +188,22 @@ public class ContainerGemCuttersTable extends Container
 		return tile;
 	}
 
-	public Map<GemCuttersTableRecipe, Boolean> updateRecipeStatus()
+	public void updateRecipeStatus()
 	{
-		Map<GemCuttersTableRecipe, Boolean> map = new HashMap<>();
+		RECIPE_STATUS.clear();
 
 		for(GemCuttersTableRecipe recipe : GemCuttersTableRecipeList.getRecipeList())
 		{
-			map.put(recipe, recipe.matchesRecipe(tileInventory, new InvWrapper(playerInventory)));
+			RECIPE_STATUS.put(recipe, recipe.matchesRecipe(tileInventory, new InvWrapper(playerInventory)));
 		}
 
-		return map;
+		outputSlot.setCurRecipe(tile.getRecipe());
+		runUpdate();
+	}
+
+	public void runUpdate()
+	{
+		if(updateRecipeGUI != null) updateRecipeGUI.run();
 	}
 
 	@Override
@@ -190,7 +211,7 @@ public class ContainerGemCuttersTable extends Container
 	{
 		super.onContainerClosed(playerIn);
 
-		this.tileInventory.deleteHook(this.updateRecipeGUI);
+		this.tileInventory.deleteHook(this::updateRecipeStatus);
 	}
 
 }
