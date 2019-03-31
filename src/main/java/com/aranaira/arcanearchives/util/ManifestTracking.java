@@ -3,7 +3,9 @@ package com.aranaira.arcanearchives.util;
 import com.aranaira.arcanearchives.ArcaneArchives;
 import com.aranaira.arcanearchives.util.types.ManifestEntry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.util.RecipeItemHelper;
@@ -98,6 +100,19 @@ public class ManifestTracking
 	}
 
 	@Nullable
+	public static IntOpenHashSet get(int dimension) {
+		IntOpenHashSet set = new IntOpenHashSet();
+		for (IntArrayList val : getDimension(dimension).values()) {
+			for (int i : val) {
+				if (set.contains(i)) continue;
+
+				set.add(i);
+			}
+		}
+		return set;
+	}
+
+	@Nullable
 	public static IntArrayList get(int dimension, BlockPos pos)
 	{
 		return getDimension(dimension).getOrDefault(pos.toLong(), null);
@@ -111,6 +126,22 @@ public class ManifestTracking
 		Long2ObjectArrayMap<Int2ObjectArrayMap<List<NBTTagCompound>>> map = nbtTags.get(dimension);
 
 		return map.getOrDefault(pos.toLong(), null);
+	}
+
+	@Nullable
+	public static Int2ObjectArrayMap<List<NBTTagCompound>> getTags(int dimension) {
+		if (!nbtTags.containsKey(dimension)) return null;
+
+		IntOpenHashSet keys = get(dimension);
+		IntOpenHashSet done = new IntOpenHashSet();
+		Int2ObjectOpenHashMap<List<NBTTagCompound>> result = new Int2ObjectOpenHashMap<>();
+		for (int key : keys) {
+			result.put(key, new ArrayList<>());
+		}
+		Long2ObjectArrayMap<Int2ObjectArrayMap<List<NBTTagCompound>>> maps = nbtTags.get(dimension);
+		for (Int2ObjectArrayMap<List<NBTTagCompound>> submap : maps.values()) {
+
+		}
 	}
 
 	public static void clear()

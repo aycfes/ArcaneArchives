@@ -1,0 +1,15 @@
+{
+  "minVersion": "0.7.10",
+  "package": "com.aranaira.arcanearchives.mixins",
+  "plugin": "com.aranaira.arcanearchives.mixins.Plugin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinDrawSlot"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "conformVisibility": true
+  }
+}
