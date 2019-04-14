@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class AAWorldSavedData extends WorldSavedData
+public class NetworkSavedData extends WorldSavedData
 {
 	public static final String ID = "Archane-Archives-Network";
 
@@ -24,12 +24,12 @@ public class AAWorldSavedData extends WorldSavedData
 
 	// It REALLY is used.
 	@SuppressWarnings("unused")
-	public AAWorldSavedData(String id)
+	public NetworkSavedData(String id)
 	{
 		super(id);
 	}
 
-	public AAWorldSavedData()
+	public NetworkSavedData()
 	{
 		super(ID);
 	}

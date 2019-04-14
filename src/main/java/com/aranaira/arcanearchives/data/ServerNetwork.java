@@ -1,6 +1,5 @@
 package com.aranaira.arcanearchives.data;
 
-import com.aranaira.arcanearchives.blocks.MonitoringCrystal;
 import com.aranaira.arcanearchives.inventory.handlers.ManifestItemHandler;
 import com.aranaira.arcanearchives.network.NetworkHandler;
 import com.aranaira.arcanearchives.network.PacketNetworks;
@@ -28,7 +27,7 @@ public class ServerNetwork implements INBTSerializable<NBTTagCompound>
 	public ManifestList manifestItems = new ManifestList(new ArrayList<>());
 	public ManifestItemHandler mManifestHandler;
 	private UUID mPlayerId;
-	private AAWorldSavedData mParent;
+	private NetworkSavedData mParent;
 	private TileList mNetworkTiles = new TileList(new ArrayList<>());
 	private int mCurrentImmanence;
 	private boolean mNeedsToBeUpdated = true;
@@ -224,12 +223,12 @@ public class ServerNetwork implements INBTSerializable<NBTTagCompound>
 		}
 	}
 
-	public AAWorldSavedData getParent()
+	public NetworkSavedData getParent()
 	{
 		return mParent;
 	}
 
-	public ServerNetwork setParent(AAWorldSavedData parent)
+	public ServerNetwork setParent(NetworkSavedData parent)
 	{
 		mParent = parent;
 		MarkUnsaved();

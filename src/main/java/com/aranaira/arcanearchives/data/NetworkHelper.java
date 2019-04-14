@@ -48,12 +48,12 @@ public class NetworkHelper
 			return null;
 		}
 
-		AAWorldSavedData saveData = (AAWorldSavedData) world.getMapStorage().getOrLoadData(AAWorldSavedData.class, AAWorldSavedData.ID);
+		NetworkSavedData saveData = (NetworkSavedData) world.getMapStorage().getOrLoadData(NetworkSavedData.class, NetworkSavedData.ID);
 
 		if(saveData == null)
 		{
-			saveData = new AAWorldSavedData();
-			world.getMapStorage().setData(AAWorldSavedData.ID, saveData);
+			saveData = new NetworkSavedData();
+			world.getMapStorage().setData(NetworkSavedData.ID, saveData);
 		}
 
 		return saveData.getNetwork(uuid);
