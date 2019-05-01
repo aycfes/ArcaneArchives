@@ -63,6 +63,10 @@ repositories {
         name = "HellfirePVP"
         url = "https://maven.hellfiredev.net"
     }
+    maven {
+        name = "CB Repo"
+        url = "http://chickenbones.net/maven"
+    }
 }
 
 dependencies {
@@ -81,6 +85,10 @@ dependencies {
     deobfCompile "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
     deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
     deobfCompile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.552"
+
+    compile "codechicken:CodeChickenLib:${minecraft_version}-${ccl_version}:deobf"
+    compile "codechicken:ForgeMultipart:${minecraft_version}-${fmp_version}:deobf"
+    compile "codechicken:Translocators:${minecraft_version}-2.5.1:deobf"
 }
 
 runClient {
